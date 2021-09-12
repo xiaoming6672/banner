@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="XMBannerView">
+        <!-- 间隔时间，单位：毫秒 -->
+        <attr name="gapInterval" format="integer|reference" />
+        <attr name="autoStart" format="boolean" />
+    </declare-styleable>
+</resources>
