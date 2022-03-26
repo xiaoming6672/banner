@@ -3,6 +3,10 @@
     <declare-styleable name="XMBannerView">
         <!-- 间隔时间，单位：毫秒 -->
         <attr name="gapInterval" format="integer|reference" />
+        <!-- 轮播滑动耗时，单位：毫秒 -->
+        <attr name="scrollDuration" format="integer|reference" />
+        <!-- 是否自动开始轮播 -->
         <attr name="autoStart" format="boolean" />
+        <attr name="android:orientation" />
     </declare-styleable>
 </resources>

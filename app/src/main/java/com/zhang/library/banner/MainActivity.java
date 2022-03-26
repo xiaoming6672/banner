@@ -16,20 +16,24 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity {
 
 
+    private XMBannerView viewBanner;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
 
-        XMBannerView viewBanner = findViewById(R.id.view_banner);
+        viewBanner = findViewById(R.id.view_banner);
         viewBanner.setAdapter(getAdapter());
 
         List<String> list = new ArrayList<>();
-        for (int index = 0; index < 1; index++) {
-            list.add("test  " + index);
+        for (int index = 0; index < 10; index++) {
+            list.add("Test  " + index);
         }
         getAdapter().getDataHolder().setDataList(list);
+
+        viewBanner.start();
     }
 
 
@@ -45,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
                     int index = new Random().nextInt(30);
                     getAdapter().getDataHolder().addData("新增的【" + index + "】");
                     getAdapter().notifyDataSetChanged();
+
+                    viewBanner.start();
                 }
             });
         }
