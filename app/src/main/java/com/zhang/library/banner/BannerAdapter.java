@@ -1,5 +1,6 @@
 package com.zhang.library.banner;
 
+import android.graphics.Color;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -38,6 +39,11 @@ public class BannerAdapter extends BaseRecyclerAdapter<String> {
         @Override
         public void onBindData(String item, int position) {
             tvText.setText(item);
+
+            if (position % 2 != 0)
+                itemView.setBackgroundColor(Color.BLUE);
+            else
+                itemView.setBackgroundColor(Color.TRANSPARENT);
         }
     }
 
