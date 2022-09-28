@@ -10,6 +10,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -80,8 +81,7 @@ public class XMBannerView extends FrameLayout implements Runnable {
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.XMBannerView);
 
         mGapInterval = a.getInteger(R.styleable.XMBannerView_gapInterval, DEFAULT_GAP_INTERVAL);
-        mGapInterval = DEFAULT_GAP_INTERVAL;
-        mScrollDuration = DEFAULT_SCROLL_DURATION;
+        mScrollDuration = a.getInteger(R.styleable.XMBannerView_scrollDuration, DEFAULT_SCROLL_DURATION);
         autoStart = a.getBoolean(R.styleable.XMBannerView_autoStart, true);
         mOrientation = a.getInteger(R.styleable.XMBannerView_android_orientation, RecyclerView.HORIZONTAL);
 
@@ -93,6 +93,7 @@ public class XMBannerView extends FrameLayout implements Runnable {
         initAttributeSet(context, attrs);
 
         mBanner = new RecyclerView(context, attrs);
+        mBanner.setId(ViewCompat.generateViewId());
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mBanner.setLayoutParams(params);
         this.addView(mBanner);
@@ -226,10 +227,12 @@ public class XMBannerView extends FrameLayout implements Runnable {
                     }
 
                     recyclerView.addOnScrollListener(this);
-                    if (isWorking)
-                        post(XMBannerView.this);
-                    else
-                        postDelayed(XMBannerView.this, getGapInterval());
+                    if (autoStart) {
+                        if (isWorking)
+                            post(XMBannerView.this);
+                        else
+                            postDelayed(XMBannerView.this, getGapInterval());
+                    }
 
                     return;
                 }
@@ -243,10 +246,12 @@ public class XMBannerView extends FrameLayout implements Runnable {
 
                 recyclerView.smoothScrollToPosition(position);
 
-                if (isWorking)
-                    post(XMBannerView.this);
-                else
-                    postDelayed(XMBannerView.this, getGapInterval());
+                if (autoStart) {
+                    if (isWorking)
+                        post(XMBannerView.this);
+                    else
+                        postDelayed(XMBannerView.this, getGapInterval());
+                }
 
             }
         };
