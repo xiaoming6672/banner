@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zhang.lib.banner.R;
@@ -41,6 +42,7 @@ public class XMBannerView extends FrameLayout implements Runnable {
 
     /** 用RecyclerView实现Banner轮播，RecyclerView方向可由android:orientation声明，或者方法设置 */
     private RecyclerView mBanner;
+    private LinearLayoutManager mLinearLayoutManager;
 
     /** 当前轮播位置 */
     private int mCurrentIndex;
@@ -98,12 +100,14 @@ public class XMBannerView extends FrameLayout implements Runnable {
         mBanner.setLayoutParams(params);
         this.addView(mBanner);
 
-        mBanner.setLayoutManager(new LinearLayoutManager(context, mOrientation, false));
+        mLinearLayoutManager = new LinearLayoutManager(context, mOrientation, false);
+        mBanner.setLayoutManager(mLinearLayoutManager);
 //        mBanner.registerOnPageChangeCallback(mOnPageChangeCallback);
-        mBanner.addOnScrollListener(createOnScrollListener());
+//        mBanner.addOnScrollListener(createOnScrollListener());
         mBanner.addOnChildAttachStateChangeListener(createChildAttachStateChangeListener());
         mBanner.setAdapter(getAdapterWrapper());
 
+        new PagerSnapHelper().attachToRecyclerView(mBanner);
 
         if (autoStart)
             start();
@@ -182,80 +186,8 @@ public class XMBannerView extends FrameLayout implements Runnable {
     /** 销毁 */
     public void destroy() {
         mBanner.clearOnChildAttachStateChangeListeners();
-        mBanner.removeOnScrollListener(createOnScrollListener());
     }
 
-    /** 滑动监听 */
-    private RecyclerView.OnScrollListener createOnScrollListener() {
-        return new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-
-                if (newState == RecyclerView.SCROLL_STATE_DRAGGING)
-                    removeCallbacks(XMBannerView.this);
-
-                if (newState == RecyclerView.SCROLL_STATE_DRAGGING || recyclerView.getLayoutManager() == null)
-                    return;
-
-                LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
-
-                if (newState == RecyclerView.SCROLL_STATE_SETTLING) {
-                    recyclerView.removeOnScrollListener(this);
-                    recyclerView.stopScroll();
-                    removeCallbacks(XMBannerView.this);
-
-                    if (manager.findFirstCompletelyVisibleItemPosition() != RecyclerView.NO_POSITION)
-                        return;
-
-                    int position = manager.findFirstVisibleItemPosition();
-
-                    View previousView = manager.findViewByPosition(position);
-
-                    boolean isHorizontal = getOrientation() == RecyclerView.HORIZONTAL;
-
-                    if (isHorizontal) {
-                        if (previousView.getRight() < getMeasuredWidth() * 0.45)
-                            recyclerView.smoothScrollToPosition(mCurrentIndex = position + 1);
-                        else
-                            recyclerView.smoothScrollToPosition(mCurrentIndex = position);
-                    } else {
-                        if (previousView.getBottom() < getMeasuredHeight() * 0.45)
-                            recyclerView.smoothScrollToPosition(mCurrentIndex = position + 1);
-                        else
-                            recyclerView.smoothScrollToPosition(mCurrentIndex = position);
-                    }
-
-                    recyclerView.addOnScrollListener(this);
-                    if (autoStart) {
-                        if (isWorking)
-                            post(XMBannerView.this);
-                        else
-                            postDelayed(XMBannerView.this, getGapInterval());
-                    }
-
-                    return;
-                }
-
-
-                int position = manager.findLastCompletelyVisibleItemPosition();
-                if (position == RecyclerView.NO_POSITION)
-                    position = mCurrentIndex;
-                else
-                    mCurrentIndex = position;
-
-                recyclerView.smoothScrollToPosition(position);
-
-                if (autoStart) {
-                    if (isWorking)
-                        post(XMBannerView.this);
-                    else
-                        postDelayed(XMBannerView.this, getGapInterval());
-                }
-
-            }
-        };
-    }
 
     /** 监听ItemView的宽高是否都设置match_parent */
     private RecyclerView.OnChildAttachStateChangeListener createChildAttachStateChangeListener() {
@@ -296,17 +228,17 @@ public class XMBannerView extends FrameLayout implements Runnable {
 
         boolean isHorizontal = getOrientation() == RecyclerView.HORIZONTAL;
 
-        int needScrollDistance = isHorizontal ? mBanner.getMeasuredWidth() : mBanner.getMeasuredHeight();
+        int needScrollDistance = isHorizontal ? mBanner.getWidth() : mBanner.getHeight();
 
         //每10毫秒滑动一次，一整个Item移动完，需要移动的次数
-        int needScrollCount = getScrollDuration() / PER_SCROLL_TIME_MILLIS;
-        int perScrollDistance = needScrollDistance / needScrollCount;
+//        int needScrollCount = getScrollDuration() / PER_SCROLL_TIME_MILLIS;
+        int perScrollDistance = needScrollDistance /*/ needScrollCount*/;
 
         isWorking = true;
         if (isHorizontal)
-            mBanner.scrollBy(perScrollDistance, 0);
+            mBanner.smoothScrollBy(perScrollDistance, 0);
         else
-            mBanner.scrollBy(0, perScrollDistance);
+            mBanner.smoothScrollBy(0, perScrollDistance);
 
         mHasScrolledDistance += perScrollDistance;
         if (mHasScrolledDistance < needScrollDistance) {
